@@ -125,16 +125,22 @@ class MetaForgeOrchestrator:
         # Continue with the same ADK session state (requirements + prior events)
         adk_session = create_adk_session(state)
         
-        # Build a refinement prompt that preserves the existing spec and asks for diffs only.
+        # Build a refinement prompt that preserves the existing spec and provides full file context
         existing_reqs = state.requirements.model_dump() if state.requirements else None
-        existing_files = [f.path for f in state.files] if state.files else []
+        
+        # Include file contents so the LLM can actually edit them
+        files_context = ""
+        for f in state.files:
+            files_context += f"--- FILE: {f.path} ---\n{f.content}\n\n"
 
         prompt = (
-            "You are refining an existing project.\n"
-            "Do NOT re-plan the spec; keep requirements as-is.\n"
-            "Return ONLY updated/added files that implement the requested change.\n\n"
+            "You are refining an existing project. Use the provided code as context.\n"
+            "Do NOT re-plan the spec; keep requirements mostly as-is unless specific changes are needed.\n"
+            "Return ONLY the files that need to be updated or added to implement the requested change.\n"
+            "Ensure you return the FULL content of each modified file.\n\n"
             f"Existing requirements (JSON): {existing_reqs}\n"
-            f"Existing file paths: {existing_files}\n\n"
+            "Current Project Files:\n"
+            f"{files_context}\n"
             f"User change request: {instruction}\n"
         )
 
@@ -207,10 +213,17 @@ class MetaForgeOrchestrator:
             # Build a prompt that includes the errors and asks for fixes
             adk_session = create_adk_session(state)
             
+            # Include file contents so the LLM can see the errors in context
+            files_context = ""
+            for f in state.files:
+                files_context += f"--- FILE: {f.path} ---\n{f.content}\n\n"
+            
             heal_prompt = (
                 "CRITICAL: The previous code generation had validation errors. "
                 "You MUST fix these errors in your output.\n\n"
                 f"Validation Errors:\n{errors_summary}\n\n"
+                "Current Code Context:\n"
+                f"{files_context}\n\n"
                 "Please regenerate the affected files with these errors fixed. "
                 "Ensure all syntax is correct, tags are closed, and code is valid.\n"
             )

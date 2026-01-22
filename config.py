@@ -58,6 +58,7 @@ You are part of an autonomous build-team. Your specific task is to implement the
 ### QUALITY CHECK:
 - No placeholders.
 - No 'TODO' comments.
+- Don't use alert() as it blocks the app.
 - Must be valid JSX that Babel-Standalone can compile."""
 
 BACKEND_GENERATOR_PROMPT = """You are a Senior Backend Systems Engineer. 
@@ -71,6 +72,7 @@ Your goal is to build a high-performance, secure, and clean API for the applicat
 
 ### CODE QUALITY:
 - Use Pydantic models for request/response validation.
+- Don't use alert() as it blocks the app.
 - Include basic error handling (404s, 400s).
 - Ensure the server starts on '0.0.0.0' so it's accessible.
 

@@ -16,8 +16,13 @@ class LivePreview:
     def create(self):
         """Create the live preview UI"""
         # Full height container, no padding, no border
-        with ui.column().classes('h-full w-full p-0 bg-black gap-0 relative'):
+        with ui.column().classes('h-full w-full p-0 bg-slate-950 gap-0 relative'):
             
+            # Placeholder for building state
+            with ui.column().classes('absolute inset-0 items-center justify-center z-0 text-slate-700 gap-4') as self.placeholder:
+                ui.icon('auto_awesome', size='64px').classes('animate-pulse opacity-20')
+                ui.label('Your application will appear here...').classes('text-lg font-light tracking-wide opacity-30')
+
             # Status overlay (hidden by default) - needs pointer events to be clickable
             with ui.row().classes('absolute top-2 right-2 z-50 gap-2').style('pointer-events: auto;') as self.controls_container:
                 self.status_label = ui.label('').classes('text-xs text-green-400 bg-black/50 px-2 rounded')
@@ -25,10 +30,10 @@ class LivePreview:
             # Preview iframe - Full Height, Full Width
             # Added onload focus helper for games
             self.iframe = ui.html(
-                f'<iframe id="preview-iframe" src="about:blank" class="w-full h-full border-none bg-white" '
+                f'<iframe id="preview-iframe" src="about:blank" class="w-full h-full border-none bg-transparent" '
                 f'onload="this.contentWindow.focus()"></iframe>', 
                 sanitize=False
-            ).classes('w-full h-full flex-grow')
+            ).classes('w-full h-full flex-grow z-10')
             
             return self
     
@@ -60,7 +65,11 @@ class LivePreview:
         sys.stdout.flush()
         
         try:
-            # Update iframe src
+            # Hide placeholder
+            if hasattr(self, 'placeholder'):
+                 self.placeholder.set_visibility(False)
+
+            # Update iframe src and set background to white for the project
             self.iframe.content = f'<iframe id="preview-iframe" src="{url}" class="w-full h-full border-none bg-white" onload="this.contentWindow.focus()"></iframe>'
             
             # Update controls container

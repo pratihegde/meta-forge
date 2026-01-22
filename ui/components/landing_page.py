@@ -29,9 +29,9 @@ def create_landing_page(on_generate: Callable[[str], None]):
                 ui.label('Introducing MetaForge v1.0').classes('text-xs font-medium text-slate-300')
 
             # Headline
-            with ui.column().classes('gap-2'):
-                ui.html('<h1 class="text-5xl md:text-7xl font-bold tracking-tight">What will you <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">build</span> today?</h1>', sanitize=False)
-                ui.label('Create stunning apps & websites by chatting with AI.').classes('text-xl text-slate-400 mt-4 font-light')
+            with ui.column().classes('gap-2 items-center'):
+                ui.html('<h1 class="text-5xl md:text-7xl font-bold tracking-tight text-center">What will you <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">build</span> today?</h1>', sanitize=False)
+                ui.label('Create stunning apps & websites by chatting with AI.').classes('text-xl text-slate-400 mt-4 font-light text-center')
 
             # Input Area (Glassmorphism)
             with ui.column().classes('w-full max-w-2xl bg-slate-900/50 border border-slate-800 rounded-2xl p-2 mt-8 backdrop-blur-xl shadow-2xl relative group focus-within:border-blue-500/50 transition-colors'):
@@ -49,12 +49,10 @@ def create_landing_page(on_generate: Callable[[str], None]):
                 problem_input.on('keydown', handle_enter)
                 
                 with ui.row().classes('w-full justify-between items-center px-4 pb-2'):
-                     with ui.button(icon='add').props('round flat').classes('text-slate-500 hover:text-white hover:bg-slate-800'):
+                     with ui.button(icon='attach_file').props('round flat').classes('text-slate-500 hover:text-white hover:bg-slate-800'):
                          ui.tooltip('Attach file')
                      
                      with ui.row().classes('items-center gap-4'):
-                         ui.icon('lightbulb', size='xs').classes('text-slate-600')
-                         ui.label('Plan').classes('text-xs text-slate-600')
                          
                          ui.button('Build now', icon='send', on_click=lambda: on_generate(problem_input.value)).classes(
                              'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl px-6 py-2 shadow-lg shadow-blue-900/20 transition-all transform active:scale-95'

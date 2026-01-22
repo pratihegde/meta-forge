@@ -174,21 +174,34 @@ class MetaForgeApp:
              )
              
              # Notify user
-             if self.progress_panel:
-                  self.progress_panel.add_message("Refinement complete! Check updated files.", sent=False)
+             try:
+                  if self.progress_panel and self.progress_panel.chat_container.client.connected:
+                      self.progress_panel.add_message("Refinement complete! Check updated files.", sent=False)
+             except:
+                  pass
              
              # Refresh preview
-             if self.live_preview:
-                  self.live_preview.refresh()
-                  
+             try:
+                  if self.live_preview:
+                      self.live_preview.refresh()
+             except:
+                  pass
+                   
          except Exception as e:
              import traceback
              traceback.print_exc()
-             if self.progress_panel:
-                  self.progress_panel.add_message(f"Refinement failed: {str(e)}", sent=False)
+             try:
+                  if self.progress_panel and self.progress_panel.chat_container.client.connected:
+                      self.progress_panel.add_message(f"Refinement failed: {str(e)}", sent=False)
+             except:
+                  pass
          finally:
              self.is_generating = False
-             if self.spinner_container: self.spinner_container.set_visibility(False)
+             try:
+                  if self.spinner_container and self.spinner_container.client.connected:
+                      self.spinner_container.set_visibility(False)
+             except:
+                  pass
              
     
     def start_generation(self, problem_statement: str):
@@ -220,6 +233,10 @@ class MetaForgeApp:
             return
         
         self.is_generating = True
+        
+        # Stop existing preview server if any
+        if self.preview_server:
+            self.preview_server.stop()
         
         # Give the workspace page a moment to load so the spinner is available
         await asyncio.sleep(0.5)

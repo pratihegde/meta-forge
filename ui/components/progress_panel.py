@@ -42,67 +42,56 @@ class ProgressPanel:
 
     def update_steps(self, steps: list[ProgressStep]):
         """Update the progress steps as a rolling log"""
-        # We only add new logs or update existing ones if they changed
-        # To avoid the 'dropdown jump', we don't clear everything if possible.
-        # But for NiceGUI simplicty, let's rebuilt but use a compact log style.
-        self.steps_container.clear()
-        with self.steps_container:
-            for step in steps:
-                color = "text-blue-400" if step.status == ProgressStatus.IN_PROGRESS else \
-                        "text-green-400" if step.status == ProgressStatus.COMPLETED else \
-                        "text-red-400" if step.status == ProgressStatus.ERROR else "text-slate-500"
-                
-                icon = "⚙️" if step.status == ProgressStatus.IN_PROGRESS else \
-                       "✅" if step.status == ProgressStatus.COMPLETED else \
-                       "❌" if step.status == ProgressStatus.ERROR else "⏳"
-                
-                with ui.row().classes('w-full gap-2 items-start opacity-90'):
-                    ui.label(f"[{step.timestamp.strftime('%H:%M:%S')}]").classes('text-[8px] text-slate-600 flex-none font-mono')
-                    ui.label(icon).classes('flex-none text-[10px]')
-                    with ui.column().classes('flex-grow gap-0'):
-                        ui.label(step.name).classes(f'font-bold {color} break-all')
-                        if step.details:
-                            ui.label(step.details).classes('text-slate-400 italic break-all opacity-80')
-        
-        # Auto-scroll log to bottom
-        if self.log_scroll:
-            self.log_scroll.scroll_to(percent=1.0)
-
-    def _render_step_ui(self, step: ProgressStep, default_open: bool = False):
-        """Render a single progress step"""
-        if step.status == ProgressStatus.COMPLETED:
-            icon, color = '✅', 'text-green-400'
-        elif step.status == ProgressStatus.IN_PROGRESS:
-            icon, color = '⏳', 'text-blue-400'
-        elif step.status == ProgressStatus.ERROR:
-            icon, color = '❌', 'text-red-400'
-        else:
-            icon, color = '⭕', 'text-slate-600'
-        
-        with ui.expansion(f'{icon} {step.name}', icon=None, value=default_open).classes(f'w-full {color} border border-slate-800 rounded bg-slate-900 overflow-hidden') as expansion:
-            # Added more contrast to details
-            if step.details:
-                ui.label(step.details).classes('text-sm text-slate-300 ml-6 whitespace-pre-wrap font-mono p-2 bg-slate-950/50 rounded')
-            ui.label(f'Updated: {step.timestamp.strftime("%H:%M:%S")}').classes('text-xs text-slate-500 ml-6 pb-2')
-        return expansion
+        if not self.steps_container or not self.steps_container.client.connected:
+            return
+            
+        try:
+            self.steps_container.clear()
+            with self.steps_container:
+                for step in steps:
+                    color = "text-blue-400" if step.status == ProgressStatus.IN_PROGRESS else \
+                            "text-green-400" if step.status == ProgressStatus.COMPLETED else \
+                            "text-red-400" if step.status == ProgressStatus.ERROR else "text-slate-500"
+                    
+                    icon = "⚙️" if step.status == ProgressStatus.IN_PROGRESS else \
+                           "✅" if step.status == ProgressStatus.COMPLETED else \
+                           "❌" if step.status == ProgressStatus.ERROR else "⏳"
+                    
+                    with ui.row().classes('w-full gap-2 items-start opacity-90'):
+                        ui.label(f"[{step.timestamp.strftime('%H:%M:%S')}]").classes('text-[8px] text-slate-600 flex-none font-mono')
+                        ui.label(icon).classes('flex-none text-[10px]')
+                        with ui.column().classes('flex-grow gap-0'):
+                            ui.label(step.name).classes(f'font-bold {color} break-all')
+                            if step.details:
+                                ui.label(step.details).classes('text-slate-400 italic break-all opacity-80')
+            
+            # Auto-scroll log to bottom
+            if self.log_scroll:
+                self.log_scroll.scroll_to(percent=1.0)
+        except:
+            pass
 
     def add_message(self, text: str, sent: bool = False):
         """Add a message to the chat container with refined alignment"""
-        with self.chat_container:
-            # Using a reliable DiceBear bot avatar
-            avatar = None if sent else 'https://api.dicebear.com/7.x/bottts/svg?seed=MetaForge'
-            # Added max-width and internal classes for better "premium" feel
-            with ui.row().classes(f'w-full {"justify-end" if sent else "justify-start"}'):
-                 ui.chat_message(
-                      text, 
-                      sent=sent, 
-                      avatar=avatar, 
-                      stamp=datetime.datetime.now().strftime("%H:%M")
-                 ).classes('max-w-[85%]')
-        
-        # Auto-scroll to bottom
-        if self.scroll_area:
-             self.scroll_area.scroll_to(percent=1.0)
+        if not self.chat_container or not self.chat_container.client.connected:
+            return
+            
+        try:
+            with self.chat_container:
+                avatar = None if sent else 'https://api.dicebear.com/7.x/bottts/svg?seed=MetaForge'
+                with ui.row().classes(f'w-full {"justify-end" if sent else "justify-start"}'):
+                    ui.chat_message(
+                        text, 
+                        sent=sent, 
+                        avatar=avatar, 
+                        stamp=datetime.datetime.now().strftime("%H:%M")
+                    ).classes('max-w-[85%]')
+            
+            # Auto-scroll to bottom
+            if self.scroll_area:
+                self.scroll_area.scroll_to(percent=1.0)
+        except:
+            pass
 
     def send_message(self):
         """Handle sending chat message"""
