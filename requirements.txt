@@ -1,0 +1,8 @@
+google-genai
+nicegui
+pydantic
+jinja2
+pygments
+aiofiles>=23.0.0
+watchdog>=4.0.0
+openai>=1.0.0

@@ -1,0 +1,22 @@
+[project]
+name = "metaforge"
+version = "0.1.0"
+description = "AI-powered app builder using Google ADK"
+requires-python = ">=3.10"
+dependencies = [
+    "google-genai>=1.0.0",
+    "nicegui>=2.0.0",
+    "pydantic>=2.0.0",
+    "jinja2>=3.1.0",
+    "pygments>=2.17.0",
+    "aiofiles>=23.0.0",
+    "watchdog>=4.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["agents", "context", "preview", "ui", "utils"]
+
