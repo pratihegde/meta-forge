@@ -126,13 +126,21 @@ class MetaForgeApp:
              # Identify the correct directory to serve
              frontend_dir = self._get_frontend_dir(project_dir)
              
-             print(f"[DEBUG] Restarting preview server for refinement, serving: {frontend_dir}")
-             self.preview_server.start(frontend_dir)
-             await asyncio.sleep(1.0)
+             # Mount the generated project directory to a unique path
+             route_path = f'/preview/{self.current_session_id}'
+             app.add_static_files(route_path, str(frontend_dir))
+             
+             print(f"[DEBUG] Restarting preview for refinement at {route_path}, serving: {frontend_dir}")
              
              # Reload preview
              if self.live_preview:
-                 await self.live_preview.load_preview(frontend_dir)
+                 preview_url = route_path + '/index.html'
+                 await self.live_preview.load_preview_url(preview_url)
+                 
+                 # Show first file in code view
+                 if session.files:
+                     f = session.files[0]
+                     self.file_tree.update_code(f.content, f.language, f.path)
 
              # Validate updated code (basic syntax checks)
              errors: list[str] = []
@@ -234,9 +242,7 @@ class MetaForgeApp:
         
         self.is_generating = True
         
-        # Stop existing preview server if any
-        if self.preview_server:
-            self.preview_server.stop()
+
         
         # Give the workspace page a moment to load so the spinner is available
         await asyncio.sleep(0.5)
@@ -303,20 +309,23 @@ class MetaForgeApp:
                  "All checks passed" if session.validation.passed else f"{len(errors)} errors remain",
             )
             
-            # Start preview server
+            # Serve files via NiceGUI instead of separate server
             frontend_dir = self._get_frontend_dir(project_dir)
-
-            print(f"[DEBUG] Starting preview server on port {config.PREVIEW_PORT}, serving: {frontend_dir}")
-            print(f"[DEBUG] Files in project_dir: {list(project_dir.glob('*'))}")
-            self.preview_server.start(frontend_dir)
             
-            # Small delay to let the preview server bind
-            await asyncio.sleep(1.5)
+            # Mount the generated project directory to a unique path
+            # We use app.add_static_files to serve the folder at /preview/{session_id}
+            route_path = f'/preview/{self.current_session_id}'
+            app.add_static_files(route_path, str(frontend_dir))
+            
+            print(f"[DEBUG] Mounted preview at {route_path}, serving: {frontend_dir}")
             
             # Auto-load preview
             if self.live_preview:
-                 print(f"[DEBUG] Loading preview from {frontend_dir}")
-                 await self.live_preview.load_preview(frontend_dir)
+                 # Calculate the relative URL for the iframe
+                 preview_url = route_path + '/index.html'
+                 print(f"[DEBUG] Loading preview from {preview_url}")
+                 await self.live_preview.load_preview_url(preview_url)
+                 
                  # Show first file in code view (now in file_tree)
                  if result.files:
                       f = result.files[0]

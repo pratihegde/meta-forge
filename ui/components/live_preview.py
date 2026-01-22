@@ -37,32 +37,14 @@ class LivePreview:
             
             return self
     
-    async def load_preview(self, project_dir: Path):
-        """Load the preview from project directory"""
-        self.loaded = False
-        self.status_label.text = 'Searching for entry point...'
+    async def load_preview_url(self, url: str):
+        """Load the preview from a specific URL"""
+        self.loaded = True
+        self.status_label.text = 'Loading...'
         self.status_label.classes('text-sm text-blue-400')
         
-        # Determine the best entry point
-        # Preference: index.html > app.py (if python based) > first html file
-        entry_point = ""
-        # The preview server is already pointed to the frontend_dir or root
-        # So we just need to hit the root URL in most cases.
-        
-        # Verify if root index exists to give high confidence success
-        has_entry = (project_dir / 'index.html').exists() or (project_dir / 'frontend' / 'index.html').exists()
-        
-        if not has_entry:
-            print(f"[WARNING] No index.html found in {project_dir}")
-            import sys
-            sys.stdout.flush()
-        
-        # Build the URL (cache-bust so iframe doesn't stick to old project assets)
-        # Using 127.0.0.1 for better compatibility than localhost
-        url = f'http://127.0.0.1:{self.preview_port}/?t={int(time.time() * 1000)}'
-        print(f"[DEBUG] Loading preview from URL: {url}, project_dir: {project_dir}")
-        import sys
-        sys.stdout.flush()
+        # Cache bust
+        final_url = f"{url}?t={int(time.time() * 1000)}"
         
         try:
             # Hide placeholder
@@ -70,32 +52,24 @@ class LivePreview:
                  self.placeholder.set_visibility(False)
 
             # Update iframe src and set background to white for the project
-            self.iframe.content = f'<iframe id="preview-iframe" src="{url}" class="w-full h-full border-none bg-white" onload="this.contentWindow.focus()"></iframe>'
+            self.iframe.content = f'<iframe id="preview-iframe" src="{final_url}" class="w-full h-full border-none bg-white" onload="this.contentWindow.focus()"></iframe>'
             
             # Update controls container
             self.controls_container.clear()
             with self.controls_container:
-                 if has_entry:
-                      self.status_label = ui.label('Preview active').classes('text-sm text-green-500')
-                      self.loaded = True
-                      print(f"[INFO] Preview loaded successfully")
-                 else:
-                      self.status_label = ui.label('Preview started (entry point not found)').classes('text-sm text-yellow-500')
-                      self.loaded = False
-                      print(f"[WARNING] Preview started but no entry point found")
-                 import sys
-                 sys.stdout.flush()
-                      
-                 ui.link('Open in New Tab', url, new_tab=True).classes('text-[10px] text-blue-400 ml-2')
-                 ui.button(icon='refresh', on_click=self.refresh).props('flat dense').classes('text-xs text-slate-400 ml-auto')
+                 self.status_label = ui.label('Preview active').classes('text-sm text-green-500')
+                 ui.link('Open in New Tab', final_url, new_tab=True).classes('text-[10px] text-blue-400 ml-2')
+                 # ui.button(icon='refresh', on_click=lambda: self.load_preview_url(url)).props('flat dense').classes('text-xs text-slate-400 ml-auto')
                  
         except Exception as e:
             self.status_label.text = f'Preview error: {str(e)}'
             self.status_label.classes('text-sm text-red-500')
-            self.loaded = False
             print(f"[ERROR] Preview load failed: {e}")
-            import sys
-            sys.stdout.flush()
+            
+    async def load_preview(self, project_dir: Path):
+        """Deprecated: Load the preview from project directory (uses separate server)"""
+        # Kept for backward compatibility if needed, but we prefer load_preview_url now
+        pass
 
     def show_error(self, message: str):
         """Show error message in preview area"""

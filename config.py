@@ -16,7 +16,7 @@ OUTPUT_DIR = BASE_DIR / "generated_projects"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 # Server Configuration
-NICEGUI_PORT = 9080
+NICEGUI_PORT = int(os.getenv("PORT", 9080))
 PREVIEW_PORT = 8081
 
 # Agent System Prompts
