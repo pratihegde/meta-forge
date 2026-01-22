@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ⚒️ MetaForge - AI-Powered App Builder
 
 **Forge apps from ideas** using Google ADK and NiceGUI.
@@ -186,3 +187,6 @@ Contributions welcome! Please open an issue or PR.
 ---
 
 Built with ❤️ using Google ADK and NiceGUI
+=======
+# meta-forge
+>>>>>>> d74172a0b70e5d7d329d6b330da65d86c74ae60b

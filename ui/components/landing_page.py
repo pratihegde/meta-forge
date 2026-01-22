@@ -40,6 +40,14 @@ def create_landing_page(on_generate: Callable[[str], None]):
                     'w-full bg-transparent text-lg p-4 text-white focus:outline-none placeholder-slate-600 min-h-[120px]'
                 ).props('autofocus spellcheck="false" input-class="resize-none"')
                 
+                # Add Enter key handler (Correct NiceGUI pattern for generic event args)
+                def handle_enter(e):
+                    # In NiceGUI GenericEventArguments, the JS event object is in e.args
+                    if e.args.get('key') == 'Enter' and not e.args.get('shiftKey'):
+                        on_generate(problem_input.value)
+                
+                problem_input.on('keydown', handle_enter)
+                
                 with ui.row().classes('w-full justify-between items-center px-4 pb-2'):
                      with ui.button(icon='add').props('round flat').classes('text-slate-500 hover:text-white hover:bg-slate-800'):
                          ui.tooltip('Attach file')

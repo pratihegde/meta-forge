@@ -93,7 +93,9 @@ class MetaForgeApp:
                 self.file_tree.on_select = lambda f: self.file_tree.update_code(f.content, f.language, f.path)
         
         # Start auto-refresh for progress updates
-        ui.timer(1.0, self.update_workspace)
+        if hasattr(self, 'workspace_timer') and self.workspace_timer:
+            self.workspace_timer.cancel()
+        self.workspace_timer = ui.timer(1.0, self.update_workspace)
         
     async def handle_chat_message(self, message: str):
         """Handle iterative updates from chat"""
@@ -121,13 +123,8 @@ class MetaForgeApp:
              import sys
              sys.stdout.flush()
              
-             # Restart preview server with updated files
-             if (project_dir / "index.html").exists():
-                 frontend_dir = project_dir
-             elif (project_dir / "frontend" / "index.html").exists():
-                 frontend_dir = project_dir / "frontend"
-             else:
-                 frontend_dir = project_dir / "frontend" if (project_dir / "frontend").exists() else project_dir
+             # Identify the correct directory to serve
+             frontend_dir = self._get_frontend_dir(project_dir)
              
              print(f"[DEBUG] Restarting preview server for refinement, serving: {frontend_dir}")
              self.preview_server.start(frontend_dir)
@@ -290,14 +287,7 @@ class MetaForgeApp:
             )
             
             # Start preview server
-            # Smarter detection: Look for index.html first
-            if (project_dir / "index.html").exists():
-                 frontend_dir = project_dir
-            elif (project_dir / "frontend" / "index.html").exists():
-                 frontend_dir = project_dir / "frontend"
-            else:
-                 # Fallback to wherever frontend or root exists
-                 frontend_dir = project_dir / "frontend" if (project_dir / "frontend").exists() else project_dir
+            frontend_dir = self._get_frontend_dir(project_dir)
 
             print(f"[DEBUG] Starting preview server on port {config.PREVIEW_PORT}, serving: {frontend_dir}")
             print(f"[DEBUG] Files in project_dir: {list(project_dir.glob('*'))}")
@@ -339,12 +329,18 @@ class MetaForgeApp:
             return
         
         # Sync spinner visibility with generation state
-        if self.spinner_container:
-            self.spinner_container.set_visibility(self.is_generating)
+        try:
+            if self.spinner_container and self.spinner_container.client.connected:
+                self.spinner_container.set_visibility(self.is_generating)
+        except:
+            pass
         
         # Update progress panel
         if self.progress_panel and session.progress_steps:
-            self.progress_panel.update_steps(session.progress_steps)
+            try:
+                self.progress_panel.update_steps(session.progress_steps)
+            except:
+                pass
         
         # Update file tree and status
         if self.file_tree and session.files:
@@ -363,6 +359,20 @@ class MetaForgeApp:
         if self.live_preview and session.files and not self.live_preview.loaded:
              # Basic check if files exist to load
              pass
+
+    def _get_frontend_dir(self, project_dir: Path) -> Path:
+        """Helper to find the best directory to serve static files from"""
+        # 1. Check root
+        if (project_dir / "index.html").exists():
+            return project_dir
+            
+        # 2. Check common subdirectories
+        for sub in ["frontend", "public", "dist", "web"]:
+            if (project_dir / sub / "index.html").exists():
+                return project_dir / sub
+                
+        # 3. Fallback to frontend folder if it exists, otherwise root
+        return project_dir / "frontend" if (project_dir / "frontend").exists() else project_dir
 
 
 def main():

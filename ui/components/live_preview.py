@@ -15,22 +15,20 @@ class LivePreview:
     
     def create(self):
         """Create the live preview UI"""
-        # Full height container, no padding, no border, ensure pointer events pass through
-        with ui.column().classes('h-full w-full p-0 bg-black gap-0 relative').style('pointer-events: none;'):
+        # Full height container, no padding, no border
+        with ui.column().classes('h-full w-full p-0 bg-black gap-0 relative'):
             
             # Status overlay (hidden by default) - needs pointer events to be clickable
             with ui.row().classes('absolute top-2 right-2 z-50 gap-2').style('pointer-events: auto;') as self.controls_container:
                 self.status_label = ui.label('').classes('text-xs text-green-400 bg-black/50 px-2 rounded')
 
-            # Preview iframe - Full Height, Full Width, explicitly interactive
-            self.iframe = ui.html(f'''
-                <iframe 
-                    src="about:blank" 
-                    class="w-full h-full border-none bg-white"
-                    style="pointer-events: auto; width: 100%; height: 100%; border: none;"
-                    allow="pointer-events"
-                ></iframe>
-            ''', sanitize=False).classes('w-full h-full flex-grow').style('pointer-events: auto;')
+            # Preview iframe - Full Height, Full Width
+            # Added onload focus helper for games
+            self.iframe = ui.html(
+                f'<iframe id="preview-iframe" src="about:blank" class="w-full h-full border-none bg-white" '
+                f'onload="this.contentWindow.focus()"></iframe>', 
+                sanitize=False
+            ).classes('w-full h-full flex-grow')
             
             return self
     
@@ -55,20 +53,15 @@ class LivePreview:
             sys.stdout.flush()
         
         # Build the URL (cache-bust so iframe doesn't stick to old project assets)
-        url = f'http://localhost:{self.preview_port}/?t={int(time.time() * 1000)}'
+        # Using 127.0.0.1 for better compatibility than localhost
+        url = f'http://127.0.0.1:{self.preview_port}/?t={int(time.time() * 1000)}'
         print(f"[DEBUG] Loading preview from URL: {url}, project_dir: {project_dir}")
         import sys
         sys.stdout.flush()
         
         try:
-            # Set iframe source with explicit pointer-events to ensure interactivity
-            self.iframe.content = f'''<iframe 
-                src="{url}" 
-                class="w-full h-full border-none bg-white"
-                style="pointer-events: auto; width: 100%; height: 100%; border: none;"
-                allow="pointer-events"
-            ></iframe>'''
-            self.iframe.style('pointer-events: auto;')
+            # Update iframe src
+            self.iframe.content = f'<iframe id="preview-iframe" src="{url}" class="w-full h-full border-none bg-white" onload="this.contentWindow.focus()"></iframe>'
             
             # Update controls container
             self.controls_container.clear()
@@ -104,15 +97,9 @@ class LivePreview:
     def refresh(self):
         """Refresh the preview"""
         if self.iframe:
-            # Trigger iframe reload (cache-bust) with explicit pointer-events
-            url = f'http://localhost:{self.preview_port}/?t={int(time.time() * 1000)}'
-            self.iframe.content = f'''<iframe 
-                src="{url}" 
-                class="w-full h-full border-none bg-white"
-                style="pointer-events: auto; width: 100%; height: 100%; border: none;"
-                allow="pointer-events"
-            ></iframe>'''
-            self.iframe.style('pointer-events: auto;')
+            # Trigger iframe reload (cache-bust)
+            url = f'http://127.0.0.1:{self.preview_port}/?t={int(time.time() * 1000)}'
+            self.iframe.content = f'<iframe id="preview-iframe" src="{url}" class="w-full h-full border-none bg-white" onload="this.contentWindow.focus()"></iframe>'
     
     def _set_viewport(self, size: str):
         """Change viewport size"""

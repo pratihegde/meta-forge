@@ -60,7 +60,7 @@ class FileTree:
              for f in sorted_files:
                   # Normalize path for display
                   path = f.path.replace('\\', '/').strip('/')
-                  icon = get_file_icon(path) if 'get_file_icon' in globals() else 'description'
+                  icon = get_file_icon(path)
                   
                   with ui.row().classes('w-full items-center px-2 py-1 hover:bg-slate-800 rounded cursor-pointer group transition-colors') \
                        .on('click', lambda _, file=f: self._handle_file_click(file)):

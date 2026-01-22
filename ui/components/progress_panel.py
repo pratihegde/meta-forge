@@ -29,6 +29,7 @@ class ProgressPanel:
                 # Input Area
                 with ui.row().classes('w-full gap-2 items-center'):
                     self.chat_input = ui.input(placeholder='Type changes...').props('rounded outlined dense dark').classes('flex-grow text-xs')
+                    self.chat_input.on('keydown.enter', self.send_message)
                     ui.button(icon='send', on_click=self.send_message).props('round dense flat').classes('text-blue-500 hover:scale-110 transition-transform')
             
             # Bottom: Progress/Logs Section (50%)

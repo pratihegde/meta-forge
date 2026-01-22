@@ -62,15 +62,16 @@ def cleanup_old_projects(output_dir: Path, keep_recent: int = 5):
         shutil.rmtree(project, ignore_errors=True)
 
 
-def get_file_icon(language: str) -> str:
-    """Get an icon/emoji for a file type"""
+def get_file_icon(filename: str) -> str:
+    """Get a Material icon name for a file type based on extension"""
+    ext = os.path.splitext(filename)[1].lower()
     icons = {
-        "python": "🐍",
-        "javascript": "📜",
-        "html": "🌐",
-        "css": "🎨",
-        "json": "📋",
-        "txt": "📄",
-        "md": "📝"
+        ".py": "terminal",
+        ".js": "javascript",
+        ".html": "html",
+        ".css": "palette",
+        ".json": "settings",
+        ".md": "edit_note",
+        ".txt": "description"
     }
-    return icons.get(language.lower(), "📄")
+    return icons.get(ext, "description")
