@@ -79,10 +79,14 @@ class LivePreview:
     
     def refresh(self):
         """Refresh the preview"""
-        if self.iframe:
+        if self.iframe and self.current_url:
             # Trigger iframe reload (cache-bust)
-            url = f'http://127.0.0.1:{self.preview_port}/?t={int(time.time() * 1000)}'
+            url = f'{self.current_url}?t={int(time.time() * 1000)}'
             self.iframe.content = f'<iframe id="preview-iframe" src="{url}" class="w-full h-full border-none bg-white" onload="this.contentWindow.focus()"></iframe>'
+        elif self.iframe:
+             # Fallback to port if no current_url (legacy)
+             url = f'http://127.0.0.1:{self.preview_port}/?t={int(time.time() * 1000)}'
+             self.iframe.content = f'<iframe id="preview-iframe" src="{url}" class="w-full h-full border-none bg-white" onload="this.contentWindow.focus()"></iframe>'
     
     def _set_viewport(self, size: str):
         """Change viewport size"""

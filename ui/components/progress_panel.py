@@ -79,13 +79,18 @@ class ProgressPanel:
         try:
             with self.chat_container:
                 avatar = None if sent else 'https://api.dicebear.com/7.x/bottts/svg?seed=MetaForge'
-                with ui.row().classes(f'w-full {"justify-end" if sent else "justify-start"}'):
-                    ui.chat_message(
-                        text, 
-                        sent=sent, 
-                        avatar=avatar, 
-                        stamp=datetime.datetime.now().strftime("%H:%M")
-                    ).classes('max-w-[85%]')
+                # Use ui.chat_message directly without row wrapper for better alignment
+                msg = ui.chat_message(
+                    text, 
+                    sent=sent, 
+                    avatar=avatar, 
+                    stamp=datetime.datetime.now().strftime("%H:%M")
+                )
+                msg.classes('w-full')
+                if not sent:
+                    msg.props('bg-color=slate-700 text-color=white')
+                else:
+                    msg.props('bg-color=blue-600 text-color=white')
             
             # Auto-scroll to bottom
             if self.scroll_area:

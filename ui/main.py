@@ -20,7 +20,7 @@ class MetaForgeApp:
     def __init__(self):
         # Initialize with OpenAI Key
         self.orchestrator = MetaForgeOrchestrator()
-        self.preview_server = PreviewServer(port=config.PREVIEW_PORT)
+        # self.preview_server = PreviewServer(port=config.PREVIEW_PORT)
         
         # UI Components
         self.progress_panel = None

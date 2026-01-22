@@ -32,7 +32,7 @@ if __name__ == "__main__":
     
     print("Starting MetaForge...", flush=True)
     print(f"NiceGUI will be available at: http://localhost:{config.NICEGUI_PORT}", flush=True)
-    print(f"Preview server will run on: http://localhost:{config.PREVIEW_PORT}", flush=True)
+    # print(f"Preview server will run on: http://localhost:{config.PREVIEW_PORT}", flush=True)
     print("", flush=True)
     
     main()
